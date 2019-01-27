@@ -8,9 +8,19 @@ use org\bovigo\vfs\vfsStream;
 /**
  * Test Videorecorder.
  */
-class VideorecorderTest extends \PHPUnit_Framework_TestCase
+class VideorecorderNewTest extends \PHPUnit_Framework_TestCase
 {
+    // TODO: Make oldstyle tests
     public function testCreateVideorecorder()
+    {
+        $config = new Configuration();
+        $this->assertInstanceOf(
+            '\VCR\Videorecorder',
+            new Videorecorder($config, new ResourceFactory($config), VCRFactory::getInstance())
+        );
+    }
+
+    public function testCreateVideorecorderOldStyle()
     {
         $this->assertInstanceOf(
             '\VCR\Videorecorder',
@@ -26,8 +36,9 @@ class VideorecorderTest extends \PHPUnit_Framework_TestCase
         $configuration->setCassettePath(vfsStream::url('testDir'));
         $configuration->enableLibraryHooks(array());
 
+        /** @var Videorecorder $videorecorder */
         $videorecorder = $this->getMockBuilder('\VCR\Videorecorder')
-            ->setConstructorArgs(array($configuration, new Util\HttpClient(), VCRFactory::getInstance()))
+            ->setConstructorArgs(array($configuration, new ResourceFactory($configuration), VCRFactory::getInstance()))
             ->setMethods(array('eject'))
             ->getMock();
 
@@ -37,6 +48,29 @@ class VideorecorderTest extends \PHPUnit_Framework_TestCase
         $videorecorder->insertCassette('cassette1');
         $videorecorder->insertCassette('cassette2');
         $videorecorder->turnOff();
+    }
+
+    public function testHandleRequestRecordsRequestWhenModeIsNewRecords()
+    {
+        $request = new Request('GET', 'http://example.com', array('User-Agent' => 'Unit-Test'));
+        $response = new Response(200, array(), 'example response');
+        $client = $this->getClientMock($request, $response);
+        $configuration = new Configuration();
+        $configuration->enableLibraryHooks(array());
+        $configuration->setMode('new_episodes');
+
+        $proxy = new ProxyBuilder('\VCR\Videorecorder');
+        $videorecorder = $proxy
+            ->setConstructorArgs(array(
+                $configuration,
+                $this->getResourceFactoryMock($client),
+                VCRFactory::getInstance()
+            ))
+            ->setProperties(array('cassette'))
+            ->getProxy();
+        $videorecorder->cassette = $this->getCassetteMock($request, $response);
+
+        $this->assertEquals($response, $videorecorder->handleRequest($request));
     }
 
     public function testHandleRequestThrowsExceptionWhenModeIsNone()
@@ -56,13 +90,41 @@ class VideorecorderTest extends \PHPUnit_Framework_TestCase
 
         $proxy = new ProxyBuilder('\VCR\Videorecorder');
         $videorecorder = $proxy
-            ->setConstructorArgs(array($configuration, $client, VCRFactory::getInstance()))
+            ->setConstructorArgs(array(
+                $configuration,
+                $this->getResourceFactoryMock($client),
+                VCRFactory::getInstance()
+            ))
             ->setProperties(array('cassette'))
             ->getProxy();
 
         $videorecorder->cassette = $this->getCassetteMock($request, $response, 'none');
 
         $videorecorder->handleRequest($request);
+    }
+
+    public function testHandleRequestRecordsRequestWhenModeIsOnceAndCassetteIsNew()
+    {
+        $request = new Request('GET', 'http://example.com', array('User-Agent' => 'Unit-Test'));
+        $response = new Response(200, array(), 'example response');
+        $client = $this->getClientMock($request, $response);
+        $configuration = new Configuration();
+        $configuration->enableLibraryHooks(array());
+        $configuration->setMode('once');
+
+        $proxy = new ProxyBuilder('\VCR\Videorecorder');
+        $videorecorder = $proxy
+            ->setConstructorArgs(array(
+                $configuration,
+                $this->getResourceFactoryMock($client),
+                VCRFactory::getInstance()
+            ))
+            ->setProperties(array('cassette'))
+            ->getProxy();
+
+        $videorecorder->cassette = $this->getCassetteMock($request, $response, 'once', true);
+
+        $this->assertEquals($response, $videorecorder->handleRequest($request));
     }
 
     public function testHandleRequestThrowsExceptionWhenModeIsOnceAndCassetteIsOld()
@@ -82,7 +144,11 @@ class VideorecorderTest extends \PHPUnit_Framework_TestCase
 
         $proxy = new ProxyBuilder('\VCR\Videorecorder');
         $videorecorder = $proxy
-            ->setConstructorArgs(array($configuration, $client, VCRFactory::getInstance()))
+            ->setConstructorArgs(array(
+                $configuration,
+                $this->getResourceFactoryMock($client),
+                VCRFactory::getInstance()
+            ))
             ->setProperties(array('cassette'))
             ->getProxy();
 
@@ -93,7 +159,7 @@ class VideorecorderTest extends \PHPUnit_Framework_TestCase
 
     protected function getClientMock($request, $response)
     {
-        $client = $this->getMockBuilder('\VCR\Util\HttpClient')->setMethods(array('send'))->getMock();
+        $client = $this->getMockBuilder('\VCR\Http\Client')->setMethods(array('send'))->getMock();
         $client
             ->expects($this->once())
             ->method('send')
@@ -130,5 +196,17 @@ class VideorecorderTest extends \PHPUnit_Framework_TestCase
         }
 
         return $cassette;
+    }
+
+    protected function getResourceFactoryMock($client)
+    {
+        $resourceFactory = $this
+            ->createMock('\VCR\ResourceFactory');
+
+        $resourceFactory
+            ->method('makeClient')
+            ->willReturn($client);
+
+        return $resourceFactory;
     }
 }

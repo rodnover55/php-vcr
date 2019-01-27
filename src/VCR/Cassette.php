@@ -2,6 +2,8 @@
 
 namespace VCR;
 
+use VCR\Interfaces\Request;
+use VCR\Interfaces\Response;
 use VCR\Storage\Storage;
 use VCR\Util\Assertion;
 
@@ -31,20 +33,33 @@ class Cassette
     protected $storage;
 
     /**
+     * @var ResourceFactory
+     */
+    protected $resourceFactory;
+
+    /**
      * Creates a new cassette.
      *
-     * @param  string           $name    Name of the cassette.
-     * @param  Configuration    $config  Configuration to use for this cassette.
-     * @param  Storage          $storage Storage to use for requests and responses.
-     * @throws \VCR\VCRException If cassette name is in an invalid format.
+     * @param  string $name Name of the cassette.
+     * @param  Configuration $config Configuration to use for this cassette.
+     * @param  Storage $storage Storage to use for requests and responses.
+     * @param ResourceFactory $resourceFactory
+     *
+     * @throws \Assert\AssertionFailedException
      */
-    public function __construct($name, Configuration $config, Storage $storage)
-    {
+    public function __construct(
+        $name,
+        Configuration $config,
+        Storage $storage,
+        ResourceFactory $resourceFactory = null
+    ) {
         Assertion::string($name, 'Cassette name must be a string, ' . \gettype($name) . ' given.');
 
         $this->name = $name;
         $this->config = $config;
         $this->storage = $storage;
+        // TODO: For backward compatibility. Remove later.
+        $this->resourceFactory = $resourceFactory ?: VCRFactory::get('VCR\ResourceFactory');
     }
 
     /**
@@ -69,9 +84,9 @@ class Cassette
     public function playback(Request $request)
     {
         foreach ($this->storage as $recording) {
-            $storedRequest = Request::fromArray($recording['request']);
+            $storedRequest = $this->resourceFactory->makeRequest($recording['request']);
             if ($storedRequest->matches($request, $this->getRequestMatchers())) {
-                return Response::fromArray($recording['response']);
+                return $this->resourceFactory->makeResponse($recording['response']);
             }
         }
 

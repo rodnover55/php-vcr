@@ -73,8 +73,8 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
         $this->config->enableRequestMatchers(array('body', 'headers'));
         $this->assertEquals(
             array(
-                array('VCR\RequestMatcher', 'matchHeaders'),
-                array('VCR\RequestMatcher', 'matchBody'),
+                array('VCR\Drivers\Http\Matcher', 'matchHeaders'),
+                array('VCR\Drivers\Http\Matcher', 'matchBody'),
             ),
             $this->config->getRequestMatchers()
         );
@@ -163,5 +163,24 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
     {
         $this->setExpectedException('VCR\VCRException', "Mode 'invalid' does not exist.");
         $this->config->setMode('invalid');
+    }
+
+    public function testGetFactories() {
+        $this->assertEquals(array(
+            Type::HTTP => array(
+                'request' => array(
+                    'class' => 'VCR\Request',
+                    'creator' => 'VCR\Request::fromArray'
+                ),
+                'response' => array(
+                    'class' => 'VCR\Response',
+                    'creator' => 'VCR\Response::fromArray'
+                ),
+                'client' => array(
+                    'class' => 'VCR\Drivers\Http\Client',
+                    'creator' => 'VCR\Drivers\Http\Client::fromArray'
+                )
+            )
+        ), $this->config->getFactories());
     }
 }

@@ -1,11 +1,15 @@
 <?php
 
+
 namespace VCR;
 
+use VCR\Interfaces\Request as RequestInterface;
+
+
 /**
- * Encapsulates a HTTP request.
+ * @deprecated use \VCR\Drivers\Http\Request
  */
-class Request
+class Request implements RequestInterface
 {
     /**
      * @var string
@@ -52,13 +56,13 @@ class Request
      * Returns true if specified request matches the current one
      * with specified request matcher callbacks.
      *
-     * @param  Request $request Request to check if it matches the current one.
+     * @param  RequestInterface $request Request to check if it matches the current one.
      * @param  \callable[] $requestMatchers Request matcher callbacks.
      *
      * @throws \BadFunctionCallException If one of the specified request matchers is not callable.
      * @return boolean True if specified request matches the current one.
      */
-    public function matches(Request $request, array $requestMatchers)
+    public function matches(RequestInterface $request, array $requestMatchers)
     {
         foreach ($requestMatchers as $matcher) {
             if (!is_callable($matcher)) {

@@ -2,8 +2,9 @@
 
 namespace VCR;
 
+
 /**
- * Collection of matcher methods to match two requests.
+ * @deprecated use \VCR\Drivers\Http\Matcher
  */
 class RequestMatcher
 {

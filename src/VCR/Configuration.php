@@ -80,7 +80,9 @@ class Configuration
     /**
      * Format:
      * array(
-     *  'name' => callback
+     *  'type => array(
+     *      'name' => callback
+     *   )
      * )
      *
      * The RequestMatcher callback takes two Request objects and
@@ -89,13 +91,28 @@ class Configuration
      * @var array List of RequestMatcher names and callbacks.
      */
     private $availableRequestMatchers = array(
-        'method'       => array('VCR\RequestMatcher', 'matchMethod'),
-        'url'          => array('VCR\RequestMatcher', 'matchUrl'),
-        'host'         => array('VCR\RequestMatcher', 'matchHost'),
-        'headers'      => array('VCR\RequestMatcher', 'matchHeaders'),
-        'body'         => array('VCR\RequestMatcher', 'matchBody'),
-        'post_fields'  => array('VCR\RequestMatcher', 'matchPostFields'),
-        'query_string' => array('VCR\RequestMatcher', 'matchQueryString'),
+        Type::HTTP => array(
+            'method'       => array('VCR\Drivers\Http\Matcher', 'matchMethod'),
+            'url'          => array('VCR\Drivers\Http\Matcher', 'matchUrl'),
+            'host'         => array('VCR\Drivers\Http\Matcher', 'matchHost'),
+            'headers'      => array('VCR\Drivers\Http\Matcher', 'matchHeaders'),
+            'body'         => array('VCR\Drivers\Http\Matcher', 'matchBody'),
+            'post_fields'  => array('VCR\Drivers\Http\Matcher', 'matchPostFields'),
+            'query_string' => array('VCR\Drivers\Http\Matcher', 'matchQueryString'),
+        )
+    );
+
+    /**
+     * All resource can be in two form:
+     * - short: [resource => <class name>] (in this case is called class static method `fromArray`)
+     * - extended: [resource => ['class' => <class name>, 'creator' => <callable returns class name>]
+    */
+    private $factories = array(
+        Type::HTTP => array(
+            'request' => 'VCR\Request',
+            'response' => 'VCR\Response',
+            'client' => 'VCR\Drivers\Http\Client'
+        )
     );
 
     /**
@@ -249,24 +266,42 @@ class Configuration
     }
 
     /**
-     * Returns a list of enabled RequestMatcher callbacks.
+     * Returns a list of enabled http RequestMatcher callbacks.
      *
      * @return array List of enabled RequestMatcher callbacks.
+     *
+     * @throws \Assert\AssertionFailedException
      */
     public function getRequestMatchers()
     {
-        if (is_null($this->enabledRequestMatchers)) {
-            return array_values($this->availableRequestMatchers);
+        return $this->getTypedRequestMatchers(Type::HTTP);
+    }
+
+    /**
+     * Returns a list of enabled RequestMatcher callbacks by type.
+     *
+     * @param $type
+     *
+     * @return array List of enabled RequestMatcher callbacks.
+     *
+     * @throws \Assert\AssertionFailedException
+     */
+    public function getTypedRequestMatchers($type)
+    {
+        Assertion::minLength($type, 1, "A type of request matchers name must be at least one character long. Found '{$type}'");
+
+        if (is_null($this->enabledRequestMatchers[$type])) {
+            return array_values($this->availableRequestMatchers[$type]);
         }
 
         return array_values(array_intersect_key(
-            $this->availableRequestMatchers,
-            array_flip($this->enabledRequestMatchers)
+            $this->availableRequestMatchers[$type],
+            array_flip($this->enabledRequestMatchers[$type])
         ));
     }
 
     /**
-     * Adds a new RequestMatcher callback.
+     * Adds a new http RequestMatcher callback.
      *
      * @param string $name Name of the RequestMatcher.
      * @param callable $callback A callback taking two Request objects as parameters and returns true if those match.
@@ -276,29 +311,64 @@ class Configuration
      */
     public function addRequestMatcher($name, $callback)
     {
+        return $this->addTypedRequestMatcher(Type::HTTP, $name, $callback);
+    }
+
+    /**
+     * Adds a new RequestMatcher callback.
+     *
+     * @param string $type Type of RequestMatcher.
+     * @param string $name Name of the RequestMatcher.
+     * @param callable $callback A callback taking two Request objects as parameters and returns true if those match.
+     *
+     * @return Configuration
+     *
+     * @throws \Assert\AssertionFailedException
+     */
+    public function addTypedRequestMatcher($type, $name, $callback)
+    {
+        Assertion::minLength($type, 1, "A type of request matchers name must be at least one character long. Found '{$type}'");
         Assertion::minLength($name, 1, "A request matchers name must be at least one character long. Found '{$name}'");
         Assertion::isCallable($callback, "Request matcher '{$name}' is not callable.");
-        $this->availableRequestMatchers[$name] = $callback;
+
+        $this->availableRequestMatchers[$type][$name] = $callback;
 
         return $this;
     }
 
     /**
-     * Enables specified RequestMatchers by its name.
+     * Enables specified http RequestMatchers by its name.
      *
      * @param array $matchers List of RequestMatcher names to enable.
      *
      * @return Configuration
      *
-     * @throws \InvalidArgumentException If a specified request matcher does not exist.
+     * @throws \Assert\AssertionFailedException
      */
     public function enableRequestMatchers(array $matchers)
     {
-        $invalidMatchers = array_diff($matchers, array_keys($this->availableRequestMatchers));
+        return $this->enableTypedRequestMatchers(Type::HTTP, $matchers);
+    }
+
+    /**
+     * Enables specified RequestMatchers by its name and type.
+     *
+     * @param string $type Type of RequestMatcher
+     * @param array $matchers List of RequestMatcher names to enable.
+     *
+     * @return Configuration
+     *
+     * @throws \Assert\AssertionFailedException
+     */
+    public function enableTypedRequestMatchers($type, array $matchers)
+    {
+        Assertion::minLength($type, 1, "A type of request matchers name must be at least one character long. Found '{$type}'");
+
+        $invalidMatchers = array_diff($matchers, array_keys($this->availableRequestMatchers[$type]));
         if ($invalidMatchers) {
             throw new \InvalidArgumentException("Request matchers don't exist: " . join(', ', $invalidMatchers));
         }
-        $this->enabledRequestMatchers = $matchers;
+        $this->enabledRequestMatchers[$type] = $matchers;
         
         return $this;
     }
@@ -309,7 +379,8 @@ class Configuration
      * @param string $storageName Name of the storage to enable.
      *
      * @return $this
-     * @throws VCRException If a invalid storage name is given.
+     *
+     * @throws \Assert\AssertionFailedException
      */
     public function setStorage($storageName)
     {
@@ -371,10 +442,42 @@ class Configuration
     }
 
     /**
+     * @return array
+     */
+    public function getFactories()
+    {
+        $factories = array();
+
+        foreach ($this->factories as $type => $factory) {
+            foreach ($factory as $resource => $definition) {
+
+                $factories[$type][$resource] = is_array($definition) ? $definition : array(
+                    'class' => $definition,
+                    'creator' => "{$definition}::fromArray"
+                );
+            }
+        }
+        return $factories;
+    }
+
+    /**
+     * @param array $factories
+     *
+     * @return Configuration
+     */
+    public function setFactories($factories)
+    {
+        $this->factories = $factories;
+
+        return $this;
+    }
+
+    /**
      * Validates a specified cassette path.
      *
      * @param string $cassettePath Path to a cassette.
-     * @throws VCRException If cassette path is invalid.
+     *
+     * @throws \Assert\AssertionFailedException
      */
     private function assertValidCassettePath($cassettePath)
     {

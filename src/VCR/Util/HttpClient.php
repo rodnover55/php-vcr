@@ -2,20 +2,29 @@
 
 namespace VCR\Util;
 
-use VCR\Request;
-use VCR\Response;
+
+use VCR\Request as HttpRequest;
+use VCR\Response as HttpResponse;
+use VCR\Interfaces\Client;
+use VCR\Interfaces\Request;
+use VCR\Interfaces\Response;
+use VCR\VCRFactory;
 
 /**
- * Sends requests over the HTTP protocol.
+ * @deprecated use \VCR\Drivers\Http\Client
  */
-class HttpClient
+class HttpClient implements Client
 {
+    public static function fromArray(array $data)
+    {
+        return VCRFactory::get(__CLASS__);
+    }
     /**
      * Returns a response for specified HTTP request.
      *
-     * @param Request $request HTTP Request to send.
+     * @param HttpRequest|Request $request HTTP Request to send.
      *
-     * @return Response Response for specified request.
+     * @return HttpResponse|Response Response for specified request.
      */
     public function send(Request $request)
     {
@@ -34,7 +43,7 @@ class HttpClient
 
         list($status, $headers, $body) = HttpUtil::parseResponse(curl_exec($ch));
 
-        return new Response(
+        return new HttpResponse(
             HttpUtil::parseStatus($status),
             HttpUtil::parseHeaders($headers),
             $body,

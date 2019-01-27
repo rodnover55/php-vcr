@@ -30,7 +30,7 @@ class VCRFactory
     {
         return new Videorecorder(
             $this->config,
-            $this->getOrCreate('VCR\Util\HttpClient'),
+            $this->getOrCreate('VCR\ResourceFactory'),
             $this
         );
     }
@@ -67,6 +67,11 @@ class VCRFactory
             $this->getOrCreate('VCR\CodeTransform\CurlCodeTransform'),
             $this->getOrCreate('VCR\Util\StreamProcessor')
         );
+    }
+
+    protected function createVCRResourceFactory()
+    {
+        return new ResourceFactory($this->config);
     }
 
     /**

@@ -2,8 +2,9 @@
 
 namespace VCR;
 
+use VCR\Interfaces\Request;
+use VCR\Interfaces\Response;
 use VCR\Util\Assertion;
-use VCR\Util\HttpClient;
 use VCR\Event\AfterHttpRequestEvent;
 use VCR\Event\AfterPlaybackEvent;
 use VCR\Event\BeforeHttpRequestEvent;
@@ -12,6 +13,7 @@ use VCR\Event\BeforeRecordEvent;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\EventDispatcher\Event;
+use VCR\Util\HttpClient;
 
 /**
  * A videorecorder records requests on a cassette.
@@ -35,14 +37,14 @@ class Videorecorder
     protected $config;
 
     /**
-     * @var HttpClient Client to use to issue HTTP requests.
-     */
-    protected $client;
-
-    /**
      * @var VCRFactory Factory which can create instances and resolve dependencies.
      */
     protected $factory;
+
+    /**
+     * @var ResourceFactory
+     */
+    protected $resourceFactory;
 
     /**
      * @var Cassette Cassette on which to store requests and responses.
@@ -62,15 +64,24 @@ class Videorecorder
     /**
      * Creates a videorecorder instance.
      *
-     * @param Configuration $config  Config options like which library hooks to use.
-     * @param HttpClient    $client  Client which is used to issue HTTP requests.
-     * @param VCRFactory    $factory Factory which can create instances and resolve dependencies.
+     * @param Configuration $config Config options like which library hooks to use.
+     * @param ResourceFactory|HttpClient $resourceFactory
+     * @param VCRFactory $factory Factory which can create instances and resolve dependencies.
      */
-    public function __construct(Configuration $config, HttpClient $client, VCRFactory $factory)
+    public function __construct(Configuration $config, $resourceFactory, VCRFactory $factory)
     {
         $this->config = $config;
-        $this->client = $client;
         $this->factory = $factory;
+
+        if ($resourceFactory instanceof HttpClient) {
+            $this->resourceFactory = $factory->getOrCreate('\VCR\ResourceFactory');
+        } elseif ($resourceFactory instanceof ResourceFactory) {
+            $this->resourceFactory = $resourceFactory;
+        } else {
+            throw new \RuntimeException(
+                "Second argument should be Resourcefactory or HttpClient. HttpClient is deprecated"
+            );
+        }
     }
 
     /**
@@ -164,7 +175,9 @@ class Videorecorder
      * @param string $cassetteName Name of the cassette (used for the cassette filename).
      *
      * @return void
+     *
      * @throws VCRException If videorecorder is turned off when inserting a cassette.
+     * @throws \Assert\AssertionFailedException
      */
     public function insertCassette($cassetteName)
     {
@@ -176,7 +189,7 @@ class Videorecorder
 
         $storage = $this->factory->get('Storage', array($cassetteName));
 
-        $this->cassette = new Cassette($cassetteName, $this->config, $storage);
+        $this->cassette = new Cassette($cassetteName, $this->config, $storage, $this->resourceFactory);
         $this->enableLibraryHooks();
     }
 
@@ -249,7 +262,8 @@ class Videorecorder
         $this->disableLibraryHooks();
 
         $this->dispatch(VCREvents::VCR_BEFORE_HTTP_REQUEST, new BeforeHttpRequestEvent($request));
-        $response = $this->client->send($request);
+        $client = $this->resourceFactory->makeClient($request);
+        $response = $client->send($request);
         $this->dispatch(VCREvents::VCR_AFTER_HTTP_REQUEST, new AfterHttpRequestEvent($request, $response));
 
         $this->dispatch(VCREvents::VCR_BEFORE_RECORD, new BeforeRecordEvent($request, $response, $this->cassette));

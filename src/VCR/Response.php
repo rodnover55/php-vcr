@@ -3,11 +3,12 @@
 namespace VCR;
 
 use VCR\Util\Assertion;
+use VCR\Interfaces\Response as ResponseInterface;
 
 /**
- * Encapsulates a HTTP response.
+ * @deprecated use \VCR\Drivers\Http\Response
  */
-class Response
+class Response implements ResponseInterface
 {
     /**
      * @var array

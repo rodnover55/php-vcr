@@ -3,8 +3,8 @@
 namespace VCR\Event;
 
 use VCR\Cassette;
-use VCR\Request;
-use VCR\Response;
+use VCR\Interfaces\Request;
+use VCR\Interfaces\Response;
 use Symfony\Component\EventDispatcher\Event;
 
 class AfterPlaybackEvent extends Event
