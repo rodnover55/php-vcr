@@ -290,7 +290,7 @@ class Configuration
     {
         Assertion::minLength($type, 1, "A type of request matchers name must be at least one character long. Found '{$type}'");
 
-        if (is_null($this->enabledRequestMatchers[$type])) {
+        if (empty($this->enabledRequestMatchers[$type])) {
             return array_values($this->availableRequestMatchers[$type]);
         }
 
@@ -373,6 +373,18 @@ class Configuration
         return $this;
     }
 
+    public function registerDriver($name, array $config)
+    {
+        $this->factories[$name] = $config['factory'];
+        $this->availableLibraryHooks = array_replace(
+            $config['hooks'],
+            $this->availableLibraryHooks
+        );
+        $this->availableRequestMatchers[$name] = $config['matchers'];
+
+        return $this;
+    }
+
     /**
      * Enables a storage by name.
      *
@@ -450,7 +462,6 @@ class Configuration
 
         foreach ($this->factories as $type => $factory) {
             foreach ($factory as $resource => $definition) {
-
                 $factories[$type][$resource] = is_array($definition) ? $definition : array(
                     'class' => $definition,
                     'creator' => "{$definition}::fromArray"

@@ -4,6 +4,7 @@ namespace VCR\LibraryHooks;
 
 /**
  * Library hook interface.
+ * @deprecated use
  */
 interface LibraryHook
 {

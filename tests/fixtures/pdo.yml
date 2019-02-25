@@ -1,0 +1,20 @@
+
+-
+    request:
+        type: pdo
+        connection:
+            dsn: 'sqlite::memory:'
+            username: null
+            password: null
+            options: null
+        method: query
+        statement: 'select 1 as test'
+        options:
+            mode: 19
+            object: null
+            ctorargs: {  }
+    response:
+        type: pdo
+        method: query
+        rows:
+            - { test: '5', 0: '5' }

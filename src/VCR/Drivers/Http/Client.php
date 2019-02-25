@@ -2,7 +2,6 @@
 
 namespace VCR\Drivers\Http;
 
-
 use VCR\Util\HttpClient;
 
 /**

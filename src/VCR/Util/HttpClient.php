@@ -2,7 +2,6 @@
 
 namespace VCR\Util;
 
-
 use VCR\Request as HttpRequest;
 use VCR\Response as HttpResponse;
 use VCR\Interfaces\Client;

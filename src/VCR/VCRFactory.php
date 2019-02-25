@@ -2,6 +2,8 @@
 
 namespace VCR;
 
+use VCR\Drivers\PDO;
+
 class VCRFactory
 {
     /**
@@ -69,6 +71,14 @@ class VCRFactory
         );
     }
 
+    protected function createVCRDriversPDOHook()
+    {
+        return new PDO\Hook(
+            $this->getOrCreate('\VCR\Drivers\PDO\CodeTransform'),
+            $this->getOrCreate('VCR\Util\StreamProcessor')
+        );
+    }
+
     protected function createVCRResourceFactory()
     {
         return new ResourceFactory($this->config);
@@ -123,7 +133,7 @@ class VCRFactory
             $callback = array($this, $this->getMethodName($className));
             $instance =  call_user_func_array($callback, $params);
         } else {
-            $instance = new $className;
+            $instance = new $className();
         }
 
         return $this->mapping[$key] = $instance;

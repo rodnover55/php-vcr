@@ -83,9 +83,13 @@ class Cassette
      */
     public function playback(Request $request)
     {
+        $type = $this->resourceFactory->getType($request);
+
         foreach ($this->storage as $recording) {
             $storedRequest = $this->resourceFactory->makeRequest($recording['request']);
-            if ($storedRequest->matches($request, $this->getRequestMatchers())) {
+            $storedType = $this->resourceFactory->getType($storedRequest);
+
+            if (($storedType == $type) && $storedRequest->matches($request, $this->getRequestMatchers($type))) {
                 return $this->resourceFactory->makeResponse($recording['response']);
             }
         }
@@ -138,10 +142,14 @@ class Cassette
     /**
      * Returns a list of callbacks to configured request matchers.
      *
+     * @param $type
+     *
      * @return array List of callbacks to configured request matchers.
+     *
+     * @throws \Assert\AssertionFailedException
      */
-    protected function getRequestMatchers()
+    protected function getRequestMatchers($type)
     {
-        return $this->config->getRequestMatchers();
+        return $this->config->getTypedRequestMatchers($type);
     }
 }

@@ -2,6 +2,8 @@
 
 namespace VCR;
 
+use VCR\Drivers\PDO\Registrar;
+
 /**
  *
  */
@@ -165,7 +167,8 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
         $this->config->setMode('invalid');
     }
 
-    public function testGetFactories() {
+    public function testGetFactories()
+    {
         $this->assertEquals(array(
             Type::HTTP => array(
                 'request' => array(
@@ -182,5 +185,18 @@ class ConfigurationTest extends \PHPUnit_Framework_TestCase
                 )
             )
         ), $this->config->getFactories());
+    }
+
+    public function testRegisterDriver()
+    {
+        $this->config
+            ->registerDriver(Type::PDO, Registrar::config());
+
+
+        $this->assertArrayHasKey(Type::PDO, $this->config->getFactories());
+        $this->assertArraySubset(array('VCR\Drivers\PDO\Hook'), $this->config->getLibraryHooks());
+
+        // If matchers doesn't exists then exception throws
+        $this->config->getTypedRequestMatchers(Type::PDO);
     }
 }

@@ -73,10 +73,10 @@ class ResourceFactory
         $class = get_class($instance);
 
         throw new \RuntimeException("Type for instance '{$class}' not found");
-
     }
 
-    protected function getFactories() {
+    protected function getFactories()
+    {
         return $this->config->getFactories();
     }
 }

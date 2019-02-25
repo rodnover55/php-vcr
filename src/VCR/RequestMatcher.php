@@ -2,7 +2,6 @@
 
 namespace VCR;
 
-
 /**
  * @deprecated use \VCR\Drivers\Http\Matcher
  */

@@ -79,7 +79,7 @@ class Videorecorder
             $this->resourceFactory = $resourceFactory;
         } else {
             throw new \RuntimeException(
-                "Second argument should be Resourcefactory or HttpClient. HttpClient is deprecated"
+                'Second argument should be Resourcefactory or HttpClient. HttpClient is deprecated'
             );
         }
     }

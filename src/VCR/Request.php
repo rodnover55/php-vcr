@@ -1,10 +1,8 @@
 <?php
 
-
 namespace VCR;
 
 use VCR\Interfaces\Request as RequestInterface;
-
 
 /**
  * @deprecated use \VCR\Drivers\Http\Request

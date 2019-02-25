@@ -18,6 +18,7 @@ class VCRFactoryTest extends \PHPUnit_Framework_TestCase
         $this->assertInstanceOf($instance, VCRFactory::get($instance));
     }
 
+    // TODO: Add resource provider testing
     public function instanceProvider()
     {
         return array(

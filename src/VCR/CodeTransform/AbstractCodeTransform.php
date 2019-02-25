@@ -2,12 +2,14 @@
 
 namespace VCR\CodeTransform;
 
+use VCR\Interfaces\CodeTransformer;
+
 /**
  * A stream wrapper filter to transform code.
  *
  * @package VCR\CodeTransform
  */
-abstract class AbstractCodeTransform extends \PHP_User_Filter
+abstract class AbstractCodeTransform extends \PHP_User_Filter implements CodeTransformer
 {
     const NAME = 'vcr_abstract_filter';
 

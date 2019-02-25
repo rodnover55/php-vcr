@@ -4,19 +4,20 @@ namespace VCR;
 
 class ResourceFactoryTest extends \PHPUnit_Framework_TestCase
 {
-    public function testChangeConfiguration() {
-            $config = new Configuration();
+    public function testChangeConfiguration()
+    {
+        $config = new Configuration();
 
-            $factory = new ResourceFactory($config);
+        $factory = new ResourceFactory($config);
 
-            $config->setFactories(array(
+        $config->setFactories(array(
                 Type::HTTP => array(
                     'test' => 'stdClass'
                 )
             ));
 
-            $this->assertEquals(Type::HTTP, $factory->getType(new \stdClass()));
-        }
+        $this->assertEquals(Type::HTTP, $factory->getType(new \stdClass()));
+    }
 
     /**
      * @dataProvider instancesProvider
