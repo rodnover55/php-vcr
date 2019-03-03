@@ -12,6 +12,8 @@ class PDO extends ParentPDO
 
     private $connection;
 
+    private $lastErrorInfo;
+
     public function __construct($dsn, $username = null, $passwd = null, array $options = null)
     {
         // TODO: Mock exception on connect
@@ -56,7 +58,17 @@ class PDO extends ParentPDO
 
     public function exec($statement)
     {
-        throw new \LogicException('Function ' . __FUNCTION__ . ' not implemented');
+        $hook = $this->getLibraryHook();
+
+        if (!$hook->isEnabled()) {
+            return parent::exec($statement);
+        }
+
+        $response = $hook->exec($this->connection, $statement);
+
+        $this->setErrorInfo($response);
+
+        return $response->getResult();
     }
 
     public function query($statement, $mode = ParentPDO::ATTR_DEFAULT_FETCH_MODE, $arg3 = null, array $ctorargs = array())
@@ -75,6 +87,8 @@ class PDO extends ParentPDO
             'ctorargs' => $ctorargs
         ));
 
+        $this->setErrorInfo($response);
+
         return new Statement($response);
     }
 
@@ -90,7 +104,20 @@ class PDO extends ParentPDO
 
     public function errorInfo()
     {
-        throw new \LogicException('Function ' . __FUNCTION__ . ' not implemented');
+        $hook = $this->getLibraryHook();
+
+        if (!$hook->isEnabled()) {
+            $this->lastErrorInfo = parent::errorInfo();
+        }
+
+        return $this->lastErrorInfo;
+    }
+
+    protected function setErrorInfo(Response $response)
+    {
+        $error = $response->getError();
+
+        $this->lastErrorInfo = $error['info'];
     }
 
     public function sqliteCreateFunction($function_name, $callback, $num_args = -1, $flags = 0)

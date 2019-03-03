@@ -100,4 +100,11 @@ class Hook implements LibraryHook
 
         return $this->getResponse($request);
     }
+
+    public function exec($connection, $statement)
+    {
+        $request = new Request($connection, 'exec', $statement);
+
+        return $this->getResponse($request);
+    }
 }

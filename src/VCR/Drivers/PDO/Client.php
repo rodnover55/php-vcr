@@ -22,6 +22,8 @@ class Client implements ClientInterface
         switch ($request->getMethod()) {
             case 'query':
                 return $this->query($request);
+            case 'exec':
+                return $this->exec($request);
         }
         return new Response();
     }
@@ -59,7 +61,15 @@ class Client implements ClientInterface
             $options['ctorargs']
         );
 
-        return Response::fromQuery($result);
+        return Response::fromQuery($result, $this->getError($connection));
+    }
+
+    protected function exec(Request $request)
+    {
+        $connection = $this->getConnection($request);
+        $result = $connection->exec($request->getStatement());
+
+        return Response::fromExec($result, $this->getError($connection));
     }
     /**
      * @param Request $request
@@ -69,5 +79,14 @@ class Client implements ClientInterface
     protected function getConnection(Request $request)
     {
         return self::$connections[self::getConnectionID($request->getConnection())];
+    }
+
+    protected function getError(PDO $connection)
+    {
+        $info = $connection->errorInfo();
+
+        return ($info === null) ? null : array(
+            'info' => $connection->errorInfo()
+        );
     }
 }

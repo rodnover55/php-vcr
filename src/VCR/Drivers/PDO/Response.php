@@ -8,39 +8,61 @@ use PDOStatement;
 
 class Response implements ResponseInterface
 {
-    /** @var array */
-    private $rows;
+    /** @var mixed */
+    private $result;
     /** @var string */
     private $method;
+    /** @var array|null */
+    private $error;
 
     public function toArray()
     {
         return array(
             'type' => Type::PDO,
             'method' => $this->method,
-            'rows' => $this->rows
+            'result' => $this->result,
+            'error' => $this->error
         );
     }
 
     public static function fromArray(array $data)
     {
         $response = new static();
-        $response->rows = $data['rows'];
+        $response->result = $data['result'];
         $response->method = $data['method'];
+        $response->error = $data['error'];
 
         return $response;
     }
 
-    public static function fromQuery(PDOStatement $query)
+    public static function fromQuery(PDOStatement $query, $error)
     {
         return static::fromArray(array(
-            'rows' => $query->fetchAll(),
-            'method' => 'query'
+            'result' => $query->fetchAll(),
+            'method' => 'query',
+            'error' => $error
+        ));
+    }
+
+    public static function fromExec($count, $error)
+    {
+        return static::fromArray(array(
+            'result' => $count,
+            'method' => 'exec',
+            'error' => $error,
         ));
     }
 
     public function getResult()
     {
-        return $this->rows;
+        return $this->result;
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getError()
+    {
+        return $this->error;
     }
 }

@@ -16,5 +16,23 @@
     response:
         type: pdo
         method: query
-        rows:
+        result:
             - { test: '5', 0: '5' }
+        error: null
+-
+    request:
+        type: pdo
+        connection:
+            dsn: 'sqlite::memory:'
+            username: null
+            password: null
+            options: null
+        method: exec
+        statement: 'create table test id int'
+        options: {  }
+    response:
+        type: pdo
+        method: exec
+        result: false
+        error:
+            info: [HY000, 1, 'near "id_change": syntax error']

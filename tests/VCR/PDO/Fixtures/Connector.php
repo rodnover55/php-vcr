@@ -4,7 +4,7 @@ namespace VCR\PDO\Fixtures;
 
 class Connector
 {
-    public function exec()
+    public function query()
     {
         $pdo = new \PDO('sqlite::memory:');
 
@@ -12,5 +12,14 @@ class Connector
         foreach ($statement as $row) {
             return $row;
         }
+    }
+
+    public function exec()
+    {
+        $pdo = new \PDO('sqlite::memory:');
+
+        $pdo->exec('create table test id int');
+
+        return $pdo->errorInfo();
     }
 }

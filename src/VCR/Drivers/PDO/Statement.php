@@ -10,19 +10,12 @@ class Statement extends PDOStatement implements \IteratorAggregate
     /** @var PDOStatement|null */
     private $statement;
 
+    /** @var Response */
     private $response;
 
-    /** @var Response|PDOStatement $data */
+    /** @var Response $data */
     public function __construct($data)
     {
-        if ($data instanceof PDOStatement) {
-            $this->statement = $data;
-
-            $data = $this->statement->fetchAll();
-
-            return;
-        }
-
         $this->response = $data;
     }
 
