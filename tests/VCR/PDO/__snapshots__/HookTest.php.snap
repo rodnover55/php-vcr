@@ -1,0 +1,44 @@
+{
+    "testQuery-0": {
+        "options": {
+            "mode": 19,
+            "object": null,
+            "ctorargs": []
+        },
+        "type": "pdo",
+        "connection": {
+            "dsn": "sqlite::memory:",
+            "username": null,
+            "password": null,
+            "options": null
+        },
+        "method": "query",
+        "statement": "select 1 as test"
+    },
+    "testExec-0": {
+        "type": "pdo",
+        "connection": {
+            "dsn": "sqlite::memory:",
+            "username": null,
+            "password": null,
+            "options": null
+        },
+        "method": "exec",
+        "statement": "create table test (id int)"
+    },
+    "testExecPrepared-0": {
+        "options": null,
+        "bindings": [
+            1
+        ],
+        "type": "pdo",
+        "connection": {
+            "dsn": "sqlite::memory:",
+            "username": null,
+            "password": null,
+            "options": null
+        },
+        "method": "prepared",
+        "statement": "select ? as test"
+    }
+}

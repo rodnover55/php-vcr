@@ -1,0 +1,48 @@
+{
+    "testSend with data set \"query\"-0": {
+        "type": "pdo",
+        "method": "query",
+        "result": [
+            {
+                "test": "1",
+                "0": "1"
+            }
+        ],
+        "error": {
+            "info": [
+                "00000",
+                null,
+                null
+            ]
+        }
+    },
+    "testSend with data set \"exec\"-0": {
+        "type": "pdo",
+        "method": "exec",
+        "result": 0,
+        "error": {
+            "info": [
+                "00000",
+                null,
+                null
+            ]
+        }
+    },
+    "testSend with data set \"execPrepared\"-0": {
+        "type": "pdo",
+        "method": "prepared",
+        "result": [
+            {
+                "test": "1",
+                "0": "1"
+            }
+        ],
+        "error": {
+            "info": [
+                "00000",
+                null,
+                null
+            ]
+        }
+    }
+}

@@ -4,29 +4,72 @@ namespace VCR\Drivers\PDO;
 
 use PDO;
 use PDOStatement;
+use VCR\VCRFactory;
 
 class Statement extends PDOStatement implements \IteratorAggregate
 {
-    /** @var PDOStatement|null */
-    private $statement;
+    /** @var Hook */
+    private $hook;
+    /** @var array */
+    private $connection;
+    private $lastErrorInfo;
 
+
+    /** @var string|null */
+    private $statement;
+    /** @var array|null */
+    private $options;
     /** @var Response */
     private $response;
+    /** @var \Iterator|null */
+    private $iterator;
 
-    /** @var Response $data */
-    public function __construct($data)
+    /**
+     * @param Response $response
+     * @return Statement
+     */
+    public static function fromQuery(Response $response)
     {
-        $this->response = $data;
+        $statement = new static();
+
+        return $statement
+            ->setResponse($response);
+    }
+
+    public static function prepared($sql, $connection, $hook, $options = null)
+    {
+        $statement = new static();
+
+        return $statement
+            ->setStatement($sql)
+            ->setOptions($options)
+            ->setConnection($connection)
+            ->setLibraryHook($hook);
     }
 
     public function execute($input_parameters = null)
     {
-        throw new \LogicException('Function ' . __FUNCTION__ . ' not implemented');
+        $hook = $this->getLibraryHook();
+
+        $response = $hook->execPrepared($this->connection, $this->statement, $input_parameters, $this->options);
+
+        $this->setResponse($response);
+
+        return $response->isSuccess();
     }
 
     public function fetch($fetch_style = null, $cursor_orientation = PDO::FETCH_ORI_NEXT, $cursor_offset = 0)
     {
-        throw new \LogicException('Function ' . __FUNCTION__ . ' not implemented');
+        $iterator = $this->getIterator();
+
+        if (!$iterator->valid()) {
+            return false;
+        }
+
+        $row = $iterator->current();
+        $iterator->next();
+
+        return $row;
     }
 
     public function bindParam($parameter, &$variable, $data_type = PDO::PARAM_STR, $length = null, $driver_options = null)
@@ -56,7 +99,16 @@ class Statement extends PDOStatement implements \IteratorAggregate
 
     public function fetchAll($fetch_style = null, $fetch_argument = null, $ctor_args = null)
     {
-        throw new \LogicException('Function ' . __FUNCTION__ . ' not implemented');
+        $rows = [];
+
+        $iterator = $this->getIterator();
+
+        while ($iterator->valid()) {
+            $rows[] = $iterator->current();
+            $iterator->next();
+        }
+
+        return $rows;
     }
 
     public function fetchObject($class_name = null, $ctor_args = null)
@@ -71,7 +123,16 @@ class Statement extends PDOStatement implements \IteratorAggregate
 
     public function errorInfo()
     {
-        throw new \LogicException('Function ' . __FUNCTION__ . ' not implemented');
+        return $this->lastErrorInfo;
+    }
+
+    protected function setErrorInfo(Response $response)
+    {
+        $error = $response->getError();
+
+        if (isset($error['info'])) {
+            $this->lastErrorInfo = $error['info'];
+        }
     }
 
     public function setAttribute($attribute, $value)
@@ -116,6 +177,116 @@ class Statement extends PDOStatement implements \IteratorAggregate
 
     public function getIterator()
     {
-        return new \ArrayIterator($this->response->getResult());
+        if (is_null($this->iterator)) {
+            $this->iterator =  new \ArrayIterator($this->response->getResult());
+        }
+
+        return $this->iterator;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getStatement()
+    {
+        return $this->statement;
+    }
+
+    /**
+     * @param string|null $statement
+     *
+     * @return $this
+     */
+    protected function setStatement($statement)
+    {
+        $this->statement = $statement;
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getConnection()
+    {
+        return $this->connection;
+    }
+
+    /**
+     * @param array $connection
+     * @return Statement
+     */
+    protected function setConnection(array $connection)
+    {
+        $this->connection = $connection;
+
+        return $this;
+    }
+
+
+
+    /**
+     * @return array|null
+     */
+    public function getOptions()
+    {
+        return $this->options;
+    }
+
+    /**
+     * @param array|null $options
+     *
+     * @return $this
+     */
+    protected function setOptions($options)
+    {
+        $this->options = $options;
+
+        return $this;
+    }
+
+    /**
+     * @return Response
+     */
+    public function getResponse()
+    {
+        return $this->response;
+    }
+
+    /**
+     * @param Response $response
+     *
+     * @return $this
+     */
+    protected function setResponse($response)
+    {
+        $this->response = $response;
+        $this->setErrorInfo($response);
+        $this->iterator = null;
+
+        return $this;
+    }
+
+
+
+    protected function getLibraryHook()
+    {
+        if (empty($this->hook)) {
+            $this->hook = VCRFactory::get('VCR\Drivers\PDO\Hook');
+        }
+
+        return $this->hook;
+    }
+
+    /**
+     * @param Hook $hook
+     *
+     * @return $this
+     */
+    protected function setLibraryHook($hook)
+    {
+        $this->hook = $hook;
+
+        return $this;
     }
 }

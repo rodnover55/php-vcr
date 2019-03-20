@@ -21,6 +21,7 @@ class Registrar
                 'connection' => array('VCR\Drivers\PDO\Matcher', 'matchConnection'),
                 'method' => array('VCR\Drivers\PDO\Matcher', 'matchMethod'),
                 'statement' => array('VCR\Drivers\PDO\Matcher', 'matchStatement'),
+                'extra' => array('VCR\Drivers\PDO\Matcher', 'matchExtra')
             )
         );
     }

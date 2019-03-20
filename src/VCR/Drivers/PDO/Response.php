@@ -53,6 +53,15 @@ class Response implements ResponseInterface
         ));
     }
 
+    public static function fromPrepared(PDOStatement $statement, $error)
+    {
+        return static::fromArray(array(
+            'result' => $statement->fetchAll(),
+            'method' => 'prepared',
+            'error' => $error
+        ));
+    }
+
     public function getResult()
     {
         return $this->result;
@@ -64,5 +73,10 @@ class Response implements ResponseInterface
     public function getError()
     {
         return $this->error;
+    }
+
+    public function isSuccess()
+    {
+        return empty($this->error['info'][0]) ? true : ($this->error['info'][0] == '00000');
     }
 }

@@ -5,8 +5,8 @@
 
     "scripts": {
         "test": "./vendor/bin/phpunit",
-        "lint": "./vendor/bin/php-cs-fixer fix --verbose --diff --dry-run --config-file=.php_cs",
-        "fix": "./vendor/bin/php-cs-fixer fix --verbose --diff --config-file=.php_cs"
+        "lint": "./vendor/bin/php-cs-fixer fix --verbose --diff --dry-run",
+        "fix": "./vendor/bin/php-cs-fixer fix --verbose --diff"
     },
 
     "authors": [
@@ -17,23 +17,27 @@
     ],
 
     "require": {
+        "php": "^5.4 || ^7.0",
         "ext-curl": "*",
         "beberlei/assert": "^2.0",
         "symfony/yaml": "~2.1|^3.0|^4.0",
-        "symfony/event-dispatcher": "^2.4|^3.0|^4.0"
+        "symfony/event-dispatcher": "^2.4|^3.0|^4.0",
+        "madewithlove/phpunit-snapshots": "^0.1.2"
     },
 
     "require-dev": {
         "phpunit/phpunit": "^4.8|^5.0",
         "sebastian/version": "^1.0.3|^2.0",
         "mikey179/vfsStream": "^1.2",
-        "lapistano/proxy-object": "dev-master#d7184a479f502d5a0f96d0bae73566dbb498da8f"
+        "lapistano/proxy-object": "dev-master#d7184a479f502d5a0f96d0bae73566dbb498da8f",
+        "friendsofphp/php-cs-fixer": "^2.14"
     },
-
     "autoload": {
         "classmap": ["src/"]
     },
-
+    "autoload-dev": {
+        "classmap": ["tests/"]
+    },
     "extra": {
         "branch-alias": {
             "dev-master": "1.4.x-dev"

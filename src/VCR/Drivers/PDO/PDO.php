@@ -33,7 +33,17 @@ class PDO extends ParentPDO
 
     public function prepare($statement, $options = null)
     {
-        throw new \LogicException('Function ' . __FUNCTION__ . ' not implemented');
+        $hook = $this->getLibraryHook();
+
+        if (!$hook->isEnabled()) {
+            if ($options === null) {
+                return parent::prepare($statement);
+            } else {
+                return parent::prepare($statement, $options);
+            }
+        }
+
+        return Statement::prepared($statement, $this->connection, $hook, $options);
     }
 
     public function beginTransaction()
@@ -89,7 +99,7 @@ class PDO extends ParentPDO
 
         $this->setErrorInfo($response);
 
-        return new Statement($response);
+        return Statement::fromQuery($response);
     }
 
     public function lastInsertId($name = null)

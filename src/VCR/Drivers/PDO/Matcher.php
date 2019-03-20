@@ -16,8 +16,11 @@ class Matcher
 
     public static function matchConnection(Request $first, Request $second)
     {
-        return
-            ($first->getConnection() == $second->getConnection()) &&
-            $first->getOptions() == $second->getOptions();
+        return $first->getConnection() == $second->getConnection();
+    }
+
+    public static function matchExtra(Request $first, Request $second)
+    {
+        return $first->getExtra() == $second->getExtra();
     }
 }

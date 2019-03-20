@@ -24,8 +24,11 @@ class Client implements ClientInterface
                 return $this->query($request);
             case 'exec':
                 return $this->exec($request);
+            case 'prepared':
+                return $this->execPrepared($request);
         }
-        return new Response();
+
+        throw new \LogicException('Unknown method:' . $request->getMethod());
     }
 
     public static function fromArray(array $data)
@@ -52,7 +55,8 @@ class Client implements ClientInterface
     {
         $connection = $this->getConnection($request);
 
-        $options = $request->getOptions();
+        $extra = $request->getExtra();
+        $options = $extra['options'];
 
         $result = $connection->query(
             $request->getStatement(),
@@ -71,6 +75,18 @@ class Client implements ClientInterface
 
         return Response::fromExec($result, $this->getError($connection));
     }
+
+    protected function execPrepared(Request $request)
+    {
+        $connection = $this->getConnection($request);
+        $statement = $connection->prepare($request->getStatement());
+
+        $options = $request->getExtra();
+        $statement->execute($options['bindings']);
+
+        return Response::fromPrepared($statement, $this->getError($statement));
+    }
+
     /**
      * @param Request $request
      *
@@ -81,7 +97,11 @@ class Client implements ClientInterface
         return self::$connections[self::getConnectionID($request->getConnection())];
     }
 
-    protected function getError(PDO $connection)
+    /**
+     * @param PDO|Statement $connection
+     * @return array|null
+     */
+    protected function getError($connection)
     {
         $info = $connection->errorInfo();
 

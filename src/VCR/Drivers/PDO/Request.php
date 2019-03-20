@@ -10,7 +10,7 @@ class Request implements RequestInterface
     private $connection;
     private $method;
     private $statement;
-    private $options;
+    private $extra;
 
     /**
      * Returns true if specified request matches the current one
@@ -41,25 +41,32 @@ class Request implements RequestInterface
 
     public function toArray()
     {
-        return array(
+        return array_replace($this->extra, array(
             'type' => Type::PDO,
             'connection' => $this->connection,
             'method' => $this->method,
             'statement' => $this->statement,
-            'options' => $this->options
-        );
+        ));
     }
 
     public static function fromArray(array $request)
     {
-        return new static($request['connection'], $request['method'], $request['statement'], $request['options']);
+        $extra = array();
+
+        foreach ($request as $key => $field) {
+            if (!in_array($key, array('connection', 'type', 'method', 'statement'))) {
+                $extra[$key] = $field;
+            }
+        }
+
+        return new static($request['connection'], $request['method'], $request['statement'], $extra);
     }
 
-    public function __construct($connection, $method, $statement, $options = array())
+    public function __construct($connection, $method, $statement, $extra = array())
     {
         $this->connection = $connection;
         $this->method = $method;
-        $this->options = $options;
+        $this->extra = $extra;
         $this->statement = $statement;
     }
 
@@ -90,8 +97,8 @@ class Request implements RequestInterface
     /**
      * @return mixed
      */
-    public function getOptions()
+    public function getExtra()
     {
-        return $this->options;
+        return $this->extra;
     }
 }

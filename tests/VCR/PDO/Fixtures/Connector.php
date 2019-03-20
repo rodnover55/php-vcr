@@ -22,4 +22,19 @@ class Connector
 
         return $pdo->errorInfo();
     }
+
+    public function execPrepared()
+    {
+        $pdo = new \PDO('sqlite::memory:');
+
+        $statement = $pdo->prepare('select ? as test');
+        $statement->execute(array(1));
+        $rows = $statement->fetchAll();
+
+        $statement->execute(array(2));
+
+        $rows = array_merge($rows, $statement->fetchAll());
+
+        return $rows;
+    }
 }

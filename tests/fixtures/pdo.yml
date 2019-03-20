@@ -18,7 +18,8 @@
         method: query
         result:
             - { test: '5', 0: '5' }
-        error: null
+        error:
+            info: ['00000', null, null]
 -
     request:
         type: pdo
@@ -29,10 +30,49 @@
             options: null
         method: exec
         statement: 'create table test id int'
-        options: {  }
     response:
         type: pdo
         method: exec
         result: false
         error:
             info: [HY000, 1, 'near "id_change": syntax error']
+-
+    request:
+        options: null
+        bindings:
+            - 1
+        type: pdo
+        connection:
+            dsn: 'sqlite::memory:'
+            username: null
+            password: null
+            options: null
+        method: prepared
+        statement: 'select ? as test'
+    response:
+        type: pdo
+        method: prepared
+        result:
+            - { test: '5', 0: '5' }
+        error:
+            info: ['00000', null, null]
+-
+    request:
+        options: null
+        bindings:
+            - 2
+        type: pdo
+        connection:
+            dsn: 'sqlite::memory:'
+            username: null
+            password: null
+            options: null
+        method: prepared
+        statement: 'select ? as test'
+    response:
+        type: pdo
+        method: prepared
+        result:
+            - { test: '3', 0: '3' }
+        error:
+            info: ['00000', null, null]

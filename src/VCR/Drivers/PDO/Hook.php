@@ -96,7 +96,9 @@ class Hook implements LibraryHook
      */
     public function query($connection, $statement, $options)
     {
-        $request = new Request($connection, 'query', $statement, $options);
+        $request = new Request($connection, 'query', $statement, array(
+            'options' => $options
+        ));
 
         return $this->getResponse($request);
     }
@@ -104,6 +106,16 @@ class Hook implements LibraryHook
     public function exec($connection, $statement)
     {
         $request = new Request($connection, 'exec', $statement);
+
+        return $this->getResponse($request);
+    }
+
+    public function execPrepared($connection, $statement, $bindings, $options)
+    {
+        $request = new Request($connection, 'prepared', $statement, [
+            'options' => $options,
+            'bindings' => $bindings
+        ]);
 
         return $this->getResponse($request);
     }
