@@ -24,7 +24,7 @@ class Statement extends PDOStatement implements \IteratorAggregate
     /** @var \Iterator|null */
     private $iterator;
 
-    private $bindings;
+    private $bindings = [];
 
     /**
      * @param Response $response
@@ -51,17 +51,22 @@ class Statement extends PDOStatement implements \IteratorAggregate
 
     public function execute($bindings = null)
     {
-        if (is_null($bindings)) {
-            $bindings = $this->bindings;
+        try {
+            if (is_null($bindings)) {
+                $bindings = $this->bindings;
+            }
+
+            $hook = $this->getLibraryHook();
+
+            $response = $hook->execPrepared($this->connection, $this->statement, $bindings, $this->options);
+
+            $this->setResponse($response);
+
+            return $response->isSuccess();
+        } finally {
+            $this->iterator = null;
+            $this->bindings = [];
         }
-
-        $hook = $this->getLibraryHook();
-
-        $response = $hook->execPrepared($this->connection, $this->statement, $bindings, $this->options);
-
-        $this->setResponse($response);
-
-        return $response->isSuccess();
     }
 
     public function fetch($fetch_style = null, $cursor_orientation = PDO::FETCH_ORI_NEXT, $cursor_offset = 0)
@@ -280,7 +285,6 @@ class Statement extends PDOStatement implements \IteratorAggregate
     {
         $this->response = $response;
         $this->setErrorInfo($response);
-        $this->iterator = null;
 
         return $this;
     }
