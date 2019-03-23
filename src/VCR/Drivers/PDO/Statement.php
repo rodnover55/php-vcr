@@ -24,6 +24,8 @@ class Statement extends PDOStatement implements \IteratorAggregate
     /** @var \Iterator|null */
     private $iterator;
 
+    private $bindings;
+
     /**
      * @param Response $response
      * @return Statement
@@ -47,11 +49,15 @@ class Statement extends PDOStatement implements \IteratorAggregate
             ->setLibraryHook($hook);
     }
 
-    public function execute($input_parameters = null)
+    public function execute($bindings = null)
     {
+        if (is_null($bindings)) {
+            $bindings = $this->bindings;
+        }
+
         $hook = $this->getLibraryHook();
 
-        $response = $hook->execPrepared($this->connection, $this->statement, $input_parameters, $this->options);
+        $response = $hook->execPrepared($this->connection, $this->statement, $bindings, $this->options);
 
         $this->setResponse($response);
 
@@ -88,7 +94,7 @@ class Statement extends PDOStatement implements \IteratorAggregate
 
     public function bindValue($parameter, $value, $data_type = PDO::PARAM_STR)
     {
-        throw new \LogicException('Function ' . __FUNCTION__ . ' not implemented');
+        $this->bindings[$parameter] = [$value, $data_type];
     }
 
     public function rowCount()
@@ -300,5 +306,13 @@ class Statement extends PDOStatement implements \IteratorAggregate
         $this->hook = $hook;
 
         return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getBindings()
+    {
+        return $this->bindings;
     }
 }

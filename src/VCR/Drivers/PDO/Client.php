@@ -82,7 +82,19 @@ class Client implements ClientInterface
         $statement = $connection->prepare($request->getStatement());
 
         $options = $request->getExtra();
-        $statement->execute($options['bindings']);
+        $bindings = $options['bindings'];
+
+        if (is_array(array_values($bindings)[0])) {
+            foreach ($bindings as $param => $item) {
+                list($value, $type) = $item;
+
+                $statement->bindValue($param, $value, $type);
+            }
+
+            $statement->execute();
+        } else {
+            $statement->execute($bindings);
+        }
 
         return Response::fromPrepared($statement, $this->getError($statement));
     }
@@ -98,7 +110,7 @@ class Client implements ClientInterface
     }
 
     /**
-     * @param PDO|Statement $connection
+     * @param \PDO|\PDOStatement $connection
      * @return array|null
      */
     protected function getError($connection)

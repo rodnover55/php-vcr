@@ -54,10 +54,16 @@ class ClientTest extends TestCase
             'exec' => [
                 new Request($this->connection, 'exec', 'create table test (id int)')
             ],
-            'execPrepared' => [
+            'execPreparedArgs' => [
                 new Request($this->connection, 'prepared', 'select ? as test', [
                     'options' => null,
                     'bindings' => [1]
+                ])
+            ],
+            'execPrepared' => [
+                new Request($this->connection, 'prepared', 'select ? as test', [
+                    'options' => null,
+                    'bindings' => [1 => [21, \PDO::PARAM_INT]]
                 ])
             ]
         ];

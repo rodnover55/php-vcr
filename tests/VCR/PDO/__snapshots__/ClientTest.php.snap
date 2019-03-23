@@ -28,13 +28,30 @@
             ]
         }
     },
-    "testSend with data set \"execPrepared\"-0": {
+    "testSend with data set \"execPreparedArgs\"-0": {
         "type": "pdo",
         "method": "prepared",
         "result": [
             {
                 "test": "1",
                 "0": "1"
+            }
+        ],
+        "error": {
+            "info": [
+                "00000",
+                null,
+                null
+            ]
+        }
+    },
+    "testSend with data set \"execPrepared\"-0": {
+        "type": "pdo",
+        "method": "prepared",
+        "result": [
+            {
+                "test": "21",
+                "0": "21"
             }
         ],
         "error": {

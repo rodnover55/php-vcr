@@ -114,7 +114,7 @@ class Hook implements LibraryHook
     {
         $request = new Request($connection, 'prepared', $statement, [
             'options' => $options,
-            'bindings' => $bindings
+            'bindings' => $bindings,
         ]);
 
         return $this->getResponse($request);

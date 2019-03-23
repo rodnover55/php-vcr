@@ -86,7 +86,7 @@ class PDOEnabledHookTest extends TestCase
         ]);
     }
 
-    public function testPrepared()
+    public function testPreparedArgs()
     {
         $error = [
             'info' => ['06660', null, null]

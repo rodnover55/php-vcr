@@ -92,6 +92,17 @@ class StatementTest extends TestCase
         $this->assertEquals($this->defaultResult, iterator_to_array($statement));
     }
 
+    public function testBindValues()
+    {
+        $statement = $this->createStatement(null);
+
+        $statement->bindValue(':name', 5, \PDO::PARAM_INT);
+
+        $this->assertEquals([
+            ':name' => [5, \PDO::PARAM_INT]
+        ], $statement->getBindings());
+    }
+
     protected function createStatement($result)
     {
         return Statement::fromQuery(Response::fromArray([
