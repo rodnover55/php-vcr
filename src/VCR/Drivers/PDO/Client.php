@@ -84,7 +84,7 @@ class Client implements ClientInterface
         $options = $request->getExtra();
         $bindings = $options['bindings'];
 
-        if (is_array(array_values($bindings)[0])) {
+        if (count($bindings) == 0 || is_array(array_values($bindings)[0])) {
             foreach ($bindings as $param => $item) {
                 list($value, $type) = $item;
 

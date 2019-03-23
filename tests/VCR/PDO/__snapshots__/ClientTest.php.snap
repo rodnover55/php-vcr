@@ -61,5 +61,22 @@
                 null
             ]
         }
+    },
+    "testSend with data set \"execPreparedEmpty\"-0": {
+        "type": "pdo",
+        "method": "prepared",
+        "result": [
+            {
+                "test": "13",
+                "0": "13"
+            }
+        ],
+        "error": {
+            "info": [
+                "00000",
+                null,
+                null
+            ]
+        }
     }
 }

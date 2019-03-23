@@ -36,7 +36,15 @@ class ClientTest extends TestCase
      */
     public function testSend(Request $request)
     {
-        $this->assertEqualsSnapshot($this->client->send($request)->toArray());
+        set_error_handler(function ($errno, $errstr, $errfile, $errline) {
+            throw new \ErrorException($errstr . ' on line ' . $errline . ' in file ' . $errfile);
+        });
+
+        try {
+            $this->assertEqualsSnapshot($this->client->send($request)->toArray());
+        } finally {
+            restore_error_handler();
+        }
     }
 
     public function requestsProvider()
@@ -64,6 +72,12 @@ class ClientTest extends TestCase
                 new Request($this->connection, 'prepared', 'select ? as test', [
                     'options' => null,
                     'bindings' => [1 => [21, \PDO::PARAM_INT]]
+                ])
+            ],
+            'execPreparedEmpty' => [
+                new Request($this->connection, 'prepared', 'select 13 as test', [
+                    'options' => null,
+                    'bindings' => []
                 ])
             ]
         ];
