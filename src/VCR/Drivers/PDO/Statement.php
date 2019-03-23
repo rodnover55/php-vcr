@@ -163,7 +163,9 @@ class Statement extends PDOStatement implements \IteratorAggregate
     {
         $iterator = $this->getIterator();
 
-        $iterator->setMode($mode);
+        if (isset($iterator)) {
+            $iterator->setMode($mode);
+        }
     }
 
     public function nextRowset()
@@ -183,6 +185,10 @@ class Statement extends PDOStatement implements \IteratorAggregate
 
     public function getIterator()
     {
+        if (is_null($this->response)) {
+            return null;
+        }
+
         if (is_null($this->iterator)) {
             $this->iterator =  new FetchIterator($this->response->getResult());
         }

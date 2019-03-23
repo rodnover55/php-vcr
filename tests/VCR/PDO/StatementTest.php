@@ -58,6 +58,13 @@ class StatementTest extends TestCase
         $this->assertEquals($row, $statement->fetch());
     }
 
+    public function testPreparedSetFetchMode()
+    {
+        $statement = new Statement();
+
+        $statement->setFetchMode(\PDO::FETCH_OBJ);
+    }
+
     public function testFetchMode()
     {
         $pdo = new \PDO('sqlite::memory:');
