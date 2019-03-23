@@ -86,9 +86,15 @@ class PDO extends ParentPDO
         $hook = $this->getLibraryHook();
 
         if (!$hook->isEnabled()) {
-            return ($mode == ParentPDO::ATTR_DEFAULT_FETCH_MODE) ?
-                (parent::query($statement)) :
-                (parent::query($statement, $mode, $arg3, $ctorargs));
+            switch ($mode) {
+                case ParentPDO::ATTR_DEFAULT_FETCH_MODE:
+                    return parent::query($statement);
+                case ParentPDO::FETCH_OBJ:
+                    return parent::query($statement, $mode);
+                default:
+                    return parent::query($statement, $mode, $arg3, $ctorargs);
+
+            }
         }
 
         $response = $hook->query($this->connection, $statement, array(

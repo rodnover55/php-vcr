@@ -66,6 +66,10 @@ class Statement extends PDOStatement implements \IteratorAggregate
             return false;
         }
 
+        if (isset($fetch_style)) {
+            $iterator->setMode($fetch_style);
+        }
+
         $row = $iterator->current();
         $iterator->next();
 
@@ -157,7 +161,9 @@ class Statement extends PDOStatement implements \IteratorAggregate
 
     public function setFetchMode($mode, $classNameObject = null, $ctorarfg = null)
     {
-        throw new \LogicException('Function ' . __FUNCTION__ . ' not implemented');
+        $iterator = $this->getIterator();
+
+        $iterator->setMode($mode);
     }
 
     public function nextRowset()
@@ -178,7 +184,7 @@ class Statement extends PDOStatement implements \IteratorAggregate
     public function getIterator()
     {
         if (is_null($this->iterator)) {
-            $this->iterator =  new \ArrayIterator($this->response->getResult());
+            $this->iterator =  new FetchIterator($this->response->getResult());
         }
 
         return $this->iterator;

@@ -33,6 +33,20 @@ class PDODisabledHookTest extends TestCase
     }
 
     /**
+     * @dataProvider queriesProvider
+     *
+     * @param string $query
+     */
+    public function testQueryAsObject($query)
+    {
+        $expected = $this->query($this->origin, $query, \PDO::FETCH_OBJ);
+        $actual = $this->query($this->wrapped, $query, \PDO::FETCH_OBJ);
+
+        $this->assertEquals($expected, $actual);
+        $this->assertErrors($this->origin, $this->wrapped);
+    }
+
+    /**
      * @dataProvider statementsProvider
      *
      * @param $query
@@ -108,12 +122,13 @@ class PDODisabledHookTest extends TestCase
     /**
      * @param \PDO $pdo
      * @param string $query
+     * @param null $mode
      *
      * @return array|bool
      */
-    protected function query($pdo, $query)
+    protected function query($pdo, $query, $mode = null)
     {
-        $statement = $pdo->query($query);
+        $statement = isset($mode) ? $pdo->query($query, $mode) : $pdo->query($query);
 
         if ($statement === false) {
             return $statement;

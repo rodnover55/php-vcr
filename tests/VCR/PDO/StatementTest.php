@@ -44,6 +44,33 @@ class StatementTest extends TestCase
         $this->assertEquals($this->defaultResult[1], $statement->fetch());
     }
 
+    public function testSetFetchMode()
+    {
+        $pdo = new \PDO('sqlite::memory:');
+
+        $actualStatement = $pdo->query('select 1 as test');
+        $actualStatement->setFetchMode(\PDO::FETCH_OBJ);
+        $row = $actualStatement->fetch();
+
+        $statement = $this->createStatement($this->defaultResult);
+
+        $statement->setFetchMode(\PDO::FETCH_OBJ);
+        $this->assertEquals($row, $statement->fetch());
+    }
+
+    public function testFetchMode()
+    {
+        $pdo = new \PDO('sqlite::memory:');
+
+        $actualStatement = $pdo->query('select 1 as test');
+        $row = $actualStatement->fetch(\PDO::FETCH_OBJ);
+
+        $statement = $this->createStatement($this->defaultResult);
+
+        $this->assertEquals($row, $statement->fetch(\PDO::FETCH_OBJ));
+    }
+
+
     public function testFetchEmpty()
     {
         $statement = $this->createStatement([]);
