@@ -51,5 +51,16 @@
         },
         "method": "create",
         "statement": null
+    },
+    "testGetAttribute-0": {
+        "type": "pdo",
+        "connection": {
+            "dsn": "sqlite::memory:",
+            "username": null,
+            "password": null,
+            "options": null
+        },
+        "method": "getAttribute",
+        "statement": 4
     }
 }

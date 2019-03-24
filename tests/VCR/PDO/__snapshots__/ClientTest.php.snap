@@ -81,18 +81,29 @@
     },
     "testSend with data set \"create\"-0": {
         "type": "pdo",
-        "method": "prepared",
+        "method": "create",
         "result": null,
         "error": null
     },
     "testSend with data set \"createFailure\"-0": {
         "type": "pdo",
-        "method": "prepared",
+        "method": "create",
         "result": null,
         "error": {
             "class": "PDOException",
             "code": 0,
             "message": "invalid data source name"
+        }
+    },
+    "testSendGetAttribute-0": {
+        "type": "pdo",
+        "method": "getAttribute",
+        "error": {
+            "info": [
+                "00000",
+                null,
+                null
+            ]
         }
     }
 }

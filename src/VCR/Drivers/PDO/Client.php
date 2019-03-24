@@ -28,6 +28,8 @@ class Client implements ClientInterface
                 return $this->execPrepared($request);
             case 'create':
                 return $this->createPDO($request);
+            case 'getAttribute':
+                return $this->getAttribute($request);
         }
 
         throw new \LogicException('Unknown method:' . $request->getMethod());
@@ -114,6 +116,18 @@ class Client implements ClientInterface
         }
 
         return Response::fromException($exception);
+    }
+
+    protected function getAttribute(Request $request)
+    {
+        $connection = $this->getConnection($request);
+        $result = $connection->getAttribute($request->getStatement());
+
+        return Response::fromArray(array(
+            'result' => $result,
+            'method' => 'getAttribute',
+            'error' => $this->getError($connection),
+        ));
     }
 
     /**

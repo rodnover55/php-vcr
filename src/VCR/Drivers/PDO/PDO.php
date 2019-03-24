@@ -162,6 +162,43 @@ class PDO extends ParentPDO
         throw new \LogicException('Function ' . __FUNCTION__ . ' not implemented');
     }
 
+    public function setAttribute($attribute, $value)
+    {
+        throw new \LogicException('Function ' . __FUNCTION__ . ' not implemented');
+    }
+
+    public function getAttribute($attribute)
+    {
+        $hook = $this->getLibraryHook();
+
+        if (!$hook->isEnabled()) {
+            $pdo = $this->getPDO();
+
+            return $pdo->getAttribute($attribute);
+        }
+
+        $response = $hook->getAttribute($this->connection, $attribute);
+
+        $this->setErrorInfo($response);
+
+        return $response->getResult();
+    }
+
+    public function quote($string, $parameter_type = ParentPDO::PARAM_STR)
+    {
+        throw new \LogicException('Function ' . __FUNCTION__ . ' not implemented');
+    }
+
+    public static function getAvailableDrivers()
+    {
+        throw new \LogicException('Function ' . __FUNCTION__ . ' not implemented');
+    }
+
+    public function sqliteCreateFunction($function_name, $callback, $num_args = -1, $flags = 0)
+    {
+        throw new \LogicException('Function ' . __FUNCTION__ . ' not implemented');
+    }
+
     public function errorInfo()
     {
         $hook = $this->getLibraryHook();
@@ -180,11 +217,6 @@ class PDO extends ParentPDO
         $error = $response->getError();
 
         $this->lastErrorInfo = $error['info'];
-    }
-
-    public function sqliteCreateFunction($function_name, $callback, $num_args = -1, $flags = 0)
-    {
-        throw new \LogicException('Function ' . __FUNCTION__ . ' not implemented');
     }
 
     protected function getLibraryHook()

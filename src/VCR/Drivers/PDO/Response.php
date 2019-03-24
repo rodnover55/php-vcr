@@ -66,7 +66,7 @@ class Response implements ResponseInterface
     {
         return static::fromArray([
             'result' => null,
-            'method' => 'prepared',
+            'method' => 'create',
             'error' => isset($exception) ? ([
                 'class' => get_class($exception),
                 'code' => $exception->getCode(),

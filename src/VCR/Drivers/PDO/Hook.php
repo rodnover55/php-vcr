@@ -126,4 +126,11 @@ class Hook implements LibraryHook
 
         return $this->getResponse($request);
     }
+
+    public function getAttribute($connection, $attribute)
+    {
+        $request = new Request($connection, 'getAttribute', $attribute);
+
+        return $this->getResponse($request);
+    }
 }

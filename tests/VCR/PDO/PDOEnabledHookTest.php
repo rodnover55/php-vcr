@@ -117,4 +117,27 @@ class PDOEnabledHookTest extends TestCase
             'error' => $statement->errorInfo()
         ]);
     }
+
+    public function testGetAttribute()
+    {
+        $error = [
+            'info' => ['00000', null, null]
+        ];
+
+        $this->response = Response::fromArray([
+            'result' => '5.4.3',
+            'method' => 'getAttributes',
+            'error' => $error
+        ]);
+
+        $result = $this->pdo->getAttribute(\PDO::ATTR_SERVER_VERSION);
+
+        $this->assertEquals([
+            'result' => $this->response->getResult(),
+            'error' => $error['info']
+        ], [
+            'result' => $result,
+            'error' => $this->pdo->errorInfo()
+        ]);
+    }
 }

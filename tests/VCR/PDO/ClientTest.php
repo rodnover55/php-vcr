@@ -22,11 +22,22 @@ class ClientTest extends TestCase
     {
         parent::setUp();
 
+        set_error_handler(function ($errno, $errstr, $errfile, $errline) {
+            throw new \ErrorException($errstr . ' on line ' . $errline . ' in file ' . $errfile);
+        });
+
         $this->client = new Client();
 
         $connection = new PDO($this->connection['dsn']);
 
         Client::register($connection);
+    }
+
+    protected function tearDown()
+    {
+        restore_error_handler();
+
+        parent::tearDown();
     }
 
     /**
@@ -36,15 +47,7 @@ class ClientTest extends TestCase
      */
     public function testSend(Request $request)
     {
-        set_error_handler(function ($errno, $errstr, $errfile, $errline) {
-            throw new \ErrorException($errstr . ' on line ' . $errline . ' in file ' . $errfile);
-        });
-
-        try {
-            $this->assertEqualsSnapshot($this->client->send($request)->toArray());
-        } finally {
-            restore_error_handler();
-        }
+        $this->assertEqualsSnapshot($this->client->send($request)->toArray());
     }
 
     public function requestsProvider()
@@ -92,5 +95,17 @@ class ClientTest extends TestCase
                 ], 'create')
             ]
         ];
+    }
+
+    public function testSendGetAttribute()
+    {
+        $request = new Request($this->connection, 'getAttribute', \PDO::ATTR_SERVER_VERSION);
+        $response = $this->client->send($request)->toArray();
+
+        $pdo = new \PDO('sqlite::memory:');
+
+        $this->assertEquals($pdo->getAttribute(PDO::ATTR_SERVER_VERSION), $response['result']);
+        unset($response['result']);
+        $this->assertEqualsSnapshot($response);
     }
 }

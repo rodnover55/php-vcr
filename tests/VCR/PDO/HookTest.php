@@ -64,4 +64,9 @@ class HookTest extends TestCase
     {
         $this->hook->create($this->connection);
     }
+
+    public function testGetAttribute()
+    {
+        $this->hook->getAttribute($this->connection, \PDO::ATTR_SERVER_VERSION);
+    }
 }

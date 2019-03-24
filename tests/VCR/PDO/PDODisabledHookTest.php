@@ -90,6 +90,14 @@ class PDODisabledHookTest extends TestCase
         $this->assertErrors($expectedStatement, $actualStatement);
     }
 
+    public function testGetAttribute()
+    {
+        $this->assertEquals(
+            $this->origin->getAttribute(\PDO::ATTR_SERVER_VERSION),
+            $this->wrapped->getAttribute(\PDO::ATTR_SERVER_VERSION)
+        );
+    }
+
     public function queriesProvider()
     {
         return array(
