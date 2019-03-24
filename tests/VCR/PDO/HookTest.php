@@ -59,4 +59,9 @@ class HookTest extends TestCase
     {
         $this->hook->execPrepared($this->connection, 'select ? as test', [1], null);
     }
+
+    public function testCreate()
+    {
+        $this->hook->create($this->connection);
+    }
 }

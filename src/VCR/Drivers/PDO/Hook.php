@@ -119,4 +119,11 @@ class Hook implements LibraryHook
 
         return $this->getResponse($request);
     }
+
+    public function create($connection)
+    {
+        $request = new Request($connection, 'create');
+
+        return $this->getResponse($request);
+    }
 }

@@ -79,6 +79,17 @@ class ClientTest extends TestCase
                     'options' => null,
                     'bindings' => []
                 ])
+            ],
+            'create' => [
+                new Request($this->connection, 'create')
+            ],
+            'createFailure' => [
+                new Request([
+                    'dsn' => 'trtr',
+                    'username' => null,
+                    'password' => null,
+                    'options' => null
+                ], 'create')
             ]
         ];
     }

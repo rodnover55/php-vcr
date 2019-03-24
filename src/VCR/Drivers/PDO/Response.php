@@ -62,6 +62,19 @@ class Response implements ResponseInterface
         ));
     }
 
+    public static function fromException(\Exception $exception = null)
+    {
+        return static::fromArray([
+            'result' => null,
+            'method' => 'prepared',
+            'error' => isset($exception) ? ([
+                'class' => get_class($exception),
+                'code' => $exception->getCode(),
+                'message' => $exception->getMessage()
+            ]) : (null)
+        ]);
+    }
+
     public function getResult()
     {
         return $this->result;

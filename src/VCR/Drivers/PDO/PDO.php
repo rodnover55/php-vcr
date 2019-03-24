@@ -9,15 +9,15 @@ class PDO extends ParentPDO
 {
     /** @var Hook */
     private $hook;
-
+    /** @var array  */
     private $connection;
+    /** @var ParentPDO */
+    private $pdo;
 
     private $lastErrorInfo;
 
     public function __construct($dsn, $username = null, $passwd = null, array $options = null)
     {
-        // TODO: Mock exception on connect
-
         $this->connection = array(
             'dsn' => $dsn,
             'username' => $username,
@@ -25,21 +25,61 @@ class PDO extends ParentPDO
             'options' => $options
         );
 
-        parent::__construct($dsn, $username, $passwd, $options);
+        $hook = $this->getLibraryHook();
+
+        if ($hook->isEnabled()) {
+            $response = $hook->create($this->connection);
+
+            $error = $response->getError();
+
+            if (isset($error)) {
+                $reflection = new \ReflectionClass($error['class']);
+
+                /** @var \Exception $exception */
+                $exception = $reflection->newInstanceWithoutConstructor();
+
+
+                $this->setProperty($reflection, $exception, 'code', $error['code']);
+                $this->setProperty($reflection, $exception, 'message', $error['message']);
+
+                throw $exception;
+            }
+        } else {
+            $this->getPDO();
+        }
 
         Client::register($this);
     }
 
+    protected function setProperty(\ReflectionClass $reflection, $exception, $property, $value)
+    {
+        $propertyReflection = $reflection->getProperty($property);
+        $isPublic = $propertyReflection->isPublic();
+
+        if (!$isPublic) {
+            $propertyReflection->setAccessible(true);
+        }
+
+        try {
+            $propertyReflection->setValue($exception, $value);
+        } finally {
+            if (!$isPublic) {
+                $propertyReflection->setAccessible(false);
+            }
+        }
+    }
 
     public function prepare($statement, $options = null)
     {
         $hook = $this->getLibraryHook();
 
         if (!$hook->isEnabled()) {
+            $pdo = $this->getPDO();
+
             if ($options === null) {
-                return parent::prepare($statement);
+                return $pdo->prepare($statement);
             } else {
-                return parent::prepare($statement, $options);
+                return $pdo->prepare($statement, $options);
             }
         }
 
@@ -71,7 +111,9 @@ class PDO extends ParentPDO
         $hook = $this->getLibraryHook();
 
         if (!$hook->isEnabled()) {
-            return parent::exec($statement);
+            $pdo = $this->getPDO();
+
+            return $pdo->exec($statement);
         }
 
         $response = $hook->exec($this->connection, $statement);
@@ -86,13 +128,15 @@ class PDO extends ParentPDO
         $hook = $this->getLibraryHook();
 
         if (!$hook->isEnabled()) {
+            $pdo = $this->getPDO();
+
             switch ($mode) {
                 case ParentPDO::ATTR_DEFAULT_FETCH_MODE:
-                    return parent::query($statement);
+                    return $pdo->query($statement);
                 case ParentPDO::FETCH_OBJ:
-                    return parent::query($statement, $mode);
+                    return $pdo->query($statement, $mode);
                 default:
-                    return parent::query($statement, $mode, $arg3, $ctorargs);
+                    return $pdo->query($statement, $mode, $arg3, $ctorargs);
 
             }
         }
@@ -123,7 +167,9 @@ class PDO extends ParentPDO
         $hook = $this->getLibraryHook();
 
         if (!$hook->isEnabled()) {
-            $this->lastErrorInfo = parent::errorInfo();
+            $pdo = $this->getPDO();
+
+            $this->lastErrorInfo = $pdo->errorInfo();
         }
 
         return $this->lastErrorInfo;
@@ -148,6 +194,20 @@ class PDO extends ParentPDO
         }
 
         return $this->hook;
+    }
+
+    protected function getPDO()
+    {
+        if (empty($this->pdo)) {
+            $this->pdo = new ParentPDO(
+                $this->connection['dsn'],
+                $this->connection['username'],
+                $this->connection['password'],
+                $this->connection['options']
+            );
+        }
+
+        return $this->pdo;
     }
 
     /**

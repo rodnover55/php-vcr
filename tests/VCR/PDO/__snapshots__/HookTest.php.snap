@@ -40,5 +40,16 @@
         },
         "method": "prepared",
         "statement": "select ? as test"
+    },
+    "testCreate-0": {
+        "type": "pdo",
+        "connection": {
+            "dsn": "sqlite::memory:",
+            "username": null,
+            "password": null,
+            "options": null
+        },
+        "method": "create",
+        "statement": null
     }
 }

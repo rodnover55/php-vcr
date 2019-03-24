@@ -26,6 +26,8 @@ class Client implements ClientInterface
                 return $this->exec($request);
             case 'prepared':
                 return $this->execPrepared($request);
+            case 'create':
+                return $this->createPDO($request);
         }
 
         throw new \LogicException('Unknown method:' . $request->getMethod());
@@ -97,6 +99,21 @@ class Client implements ClientInterface
         }
 
         return Response::fromPrepared($statement, $this->getError($statement));
+    }
+
+    protected function createPDO(Request $request)
+    {
+        $exception = null;
+
+        try {
+            $connection = $request->getConnection();
+
+            new \PDO($connection['dsn'], $connection['username'], $connection['password'], $connection['options']);
+        } catch (\Exception $e) {
+            $exception = $e;
+        }
+
+        return Response::fromException($exception);
     }
 
     /**

@@ -21,22 +21,27 @@ class PDOEnabledHookTest extends TestCase
     {
         parent::setUp();
 
-
         $builder = $this->getMockBuilder('VCR\Drivers\PDO\PDO');
 
         $builder
             ->setMethods(['getLibraryHook'])
-            ->setConstructorArgs(['sqlite::memory:']);
+            ->disableOriginalConstructor();
 
         $this->pdo = $builder->getMock();
 
         $this->hook = new Hook();
-
         $this->hook->enable(function (Request $request) {
             return $this->response;
         });
 
         $this->pdo->expects($this->any())->method('getLibraryHook')->willReturn($this->hook);
+
+        $this->response = Response::fromArray([
+            'method' => 'create',
+            'error' => null
+        ]);
+
+        $this->pdo->__construct('sqlite::memory:');
     }
 
     public function testQuery()

@@ -62,7 +62,7 @@ class Request implements RequestInterface
         return new static($request['connection'], $request['method'], $request['statement'], $extra);
     }
 
-    public function __construct($connection, $method, $statement, $extra = array())
+    public function __construct($connection, $method, $statement = null, $extra = array())
     {
         $this->connection = $connection;
         $this->method = $method;

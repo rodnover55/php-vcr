@@ -76,3 +76,18 @@
             - { test: '3', 0: '3' }
         error:
             info: ['00000', null, null]
+-
+    request:
+        type: pdo
+        connection:
+            dsn: 'sqlite::memory:'
+            username: null
+            password: null
+            options: null
+        method: create
+        statement: null
+    response:
+        type: pdo
+        method: prepared
+        result: null
+        error: null

@@ -78,5 +78,21 @@
                 null
             ]
         }
+    },
+    "testSend with data set \"create\"-0": {
+        "type": "pdo",
+        "method": "prepared",
+        "result": null,
+        "error": null
+    },
+    "testSend with data set \"createFailure\"-0": {
+        "type": "pdo",
+        "method": "prepared",
+        "result": null,
+        "error": {
+            "class": "PDOException",
+            "code": 0,
+            "message": "invalid data source name"
+        }
     }
 }
